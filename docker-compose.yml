@@ -24,20 +24,20 @@ services:
       db:
         condition: service_healthy
     environment:
-      Database__ConnectionString: Host=db;Port=5432;Database=${POSTGRES_DB:-ip_deputy};Username=${POSTGRES_USER:-ip_deputy};Password=${POSTGRES_PASSWORD}
-      Database__ApplyMigrationsOnStartup: "true"
-      AuthorizeJWT__Key: ${JWT_ACCESS_KEY:?JWT_ACCESS_KEY is required}
-      AuthorizeJWT__Issuer: ${JWT_ISSUER:-ip-deputy}
-      AuthorizeJWT__Audience: ${JWT_AUDIENCE:-ip-deputy}
-      RefreshJWT__Key: ${JWT_REFRESH_KEY:?JWT_REFRESH_KEY is required}
-      RefreshJWT__Issuer: ${JWT_ISSUER:-ip-deputy}
-      RefreshJWT__Audience: ${JWT_AUDIENCE:-ip-deputy}
-      BotAuthorizeToken: ${BOT_API_TOKEN:?BOT_API_TOKEN is required}
-      BotToken: ${BOT_TOKEN:?BOT_TOKEN is required}
-      InitialAdmin__Login: ${INITIAL_ADMIN_LOGIN:-}
-      InitialAdmin__Password: ${INITIAL_ADMIN_PASSWORD:-}
-      Origins__0: ${FRONTEND_URL:?FRONTEND_URL is required}
-      Schedule__TimeZone: ${TIME_ZONE:-Europe/Kyiv}
+      DATABASE_HOST: db
+      DATABASE_NAME: ${POSTGRES_DB:-ip_deputy}
+      DATABASE_USER: ${POSTGRES_USER:-ip_deputy}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_ACCESS_KEY: ${JWT_ACCESS_KEY:?JWT_ACCESS_KEY is required}
+      JWT_REFRESH_KEY: ${JWT_REFRESH_KEY:?JWT_REFRESH_KEY is required}
+      JWT_ISSUER: ${JWT_ISSUER:-ip-deputy}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-ip-deputy}
+      BOT_API_TOKEN: ${BOT_API_TOKEN:?BOT_API_TOKEN is required}
+      BOT_TOKEN: ${BOT_TOKEN:?BOT_TOKEN is required}
+      INITIAL_ADMIN_LOGIN: ${INITIAL_ADMIN_LOGIN:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      CORS_ORIGINS: ${FRONTEND_URL:?FRONTEND_URL is required}
+      TIME_ZONE: ${TIME_ZONE:-Europe/Kyiv}
     ports:
       - "${API_PORT:-8000}:8080"
 
