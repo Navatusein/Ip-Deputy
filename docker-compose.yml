@@ -1,0 +1,74 @@
+name: ip-deputy
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ip_deputy}
+      POSTGRES_USER: ${POSTGRES_USER:-ip_deputy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=uk-UA"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ${DOCKERHUB_USERNAME:-navatusein}/ip-deputy-api:${API_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      Database__ConnectionString: Host=db;Port=5432;Database=${POSTGRES_DB:-ip_deputy};Username=${POSTGRES_USER:-ip_deputy};Password=${POSTGRES_PASSWORD}
+      Database__ApplyMigrationsOnStartup: "true"
+      AuthorizeJWT__Key: ${JWT_ACCESS_KEY:?JWT_ACCESS_KEY is required}
+      AuthorizeJWT__Issuer: ${JWT_ISSUER:-ip-deputy}
+      AuthorizeJWT__Audience: ${JWT_AUDIENCE:-ip-deputy}
+      RefreshJWT__Key: ${JWT_REFRESH_KEY:?JWT_REFRESH_KEY is required}
+      RefreshJWT__Issuer: ${JWT_ISSUER:-ip-deputy}
+      RefreshJWT__Audience: ${JWT_AUDIENCE:-ip-deputy}
+      BotAuthorizeToken: ${BOT_API_TOKEN:?BOT_API_TOKEN is required}
+      BotToken: ${BOT_TOKEN:?BOT_TOKEN is required}
+      InitialAdmin__Login: ${INITIAL_ADMIN_LOGIN:-}
+      InitialAdmin__Password: ${INITIAL_ADMIN_PASSWORD:-}
+      Origins__0: ${FRONTEND_URL:?FRONTEND_URL is required}
+      Schedule__TimeZone: ${TIME_ZONE:-Europe/Kyiv}
+    ports:
+      - "${API_PORT:-8000}:8080"
+
+  bot:
+    image: ${DOCKERHUB_USERNAME:-navatusein}/ip-deputy-bot:${BOT_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      API_TOKEN: ${BOT_API_TOKEN}
+      API_URL: http://api:8080/api/bot
+      FRONTEND_URL: ${FRONTEND_URL}
+      WEBHOOK_URL: ${BOT_WEBHOOK_URL:?BOT_WEBHOOK_URL is required}
+      WEBHOOK_PATH: ${BOT_WEBHOOK_PATH:-/bot-webhook}
+      WEBHOOK_SECRET: ${BOT_WEBHOOK_SECRET:?BOT_WEBHOOK_SECRET is required}
+      TIME_ZONE: ${TIME_ZONE:-Europe/Kyiv}
+    ports:
+      - "${BOT_PORT:-7540}:7540"
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME:-navatusein}/ip-deputy-frontend:${FRONTEND_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_URL: ${FRONTEND_URL}/api
+      GROUP_NAME: ${GROUP_NAME:-IP-41}
+      TIME_ZONE: ${TIME_ZONE:-Europe/Kyiv}
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  db-data:
