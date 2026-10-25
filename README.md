@@ -50,7 +50,7 @@ The first admin is created from `INITIAL_ADMIN_LOGIN` / `INITIAL_ADMIN_PASSWORD`
 Each repository has the same workflows:
 
 - **CI** runs on every push and pull request.
-- **Docker** pushes `dev`, `dev-latest` and `dev-<sha>` images on every push to `dev`.
+- **Docker** pushes `dev`, `dev-latest` and `dev-<sha>` images to GitHub Container Registry (`ghcr.io/navatusein/ip-deputy-api`, `-bot`, `-frontend`) on every push to `dev`.
 - **Release** is started manually from `main` with a patch, minor or major bump. It creates the `vX.Y.Z` tag, a GitHub release with the changelog, and pushes the `X.Y.Z`, `X.Y`, `X` and `latest` images.
 
 ## License
